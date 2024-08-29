@@ -23,4 +23,5 @@ require (
 	golang.org/x/text v0.17.0 // indirect
 	gorm.io/driver/mysql v1.5.7 // indirect
 	gorm.io/gorm v1.25.11 // indirect
+	gorm.io/plugin/dbresolver v1.5.2 // indirect
 )
