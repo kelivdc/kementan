@@ -12,6 +12,6 @@ func InitRoutes(app *fiber.App) {
 		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",
 	}))
 
-	app.Get("/start", handlers.StartMigrasi)
+	app.Get("/start", handlers.Sinkronisasi)
 	app.Get("/district", handlers.District)
 }

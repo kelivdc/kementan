@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/gofiber/fiber/v2"
 	"kementan.com/database"
@@ -14,10 +14,18 @@ func NullToZero(input interface{}) interface{} {
 	return input
 }
 
-func StartMigrasi(c *fiber.Ctx) error {
+func Sinkronisasi(c *fiber.Ctx) error {
+	go StartMigrasi()
+	return c.JSON(fiber.Map{
+		"data": "Sinkronisai On progress",
+	})
+}
+func StartMigrasi() error {
 	var count int64
+	log.Println("=== Start Sinkronisasi ===")
+
 	result := []map[string]interface{}{}
-	sql := `SELECT * FROM submissions_simluhtan order by id ASC LIMIT 10`
+	sql := `SELECT * FROM submissions_simluhtan order by id ASC LIMIT 100000`
 	database.DB.Db.Raw(sql).Scan(&result)
 
 	database.DB.Db.Raw("SELECT COUNT(id) as total FROM submissions_simluhtan_alo_mitreka3").Count(&count)
@@ -25,7 +33,7 @@ func StartMigrasi(c *fiber.Ctx) error {
 	for _, data := range result {
 		if count > 0 {
 			// UPDATE DATE
-			fmt.Println("== Update ==")
+			// fmt.Println("== Update ==")
 		} else {
 			// INSERT NEW
 			sql_insert := `
@@ -146,7 +154,7 @@ func StartMigrasi(c *fiber.Ctx) error {
 				?, ?, ?, 
 				?, ?, ?, 
 				?, ?, 
-				?, ?, ?, 
+				CURRENT_TIMESTAMP, ?, ?, 
 				?, ?, 
 				?, ?, ?, 
 				?, ?, ?, ?,
@@ -155,8 +163,8 @@ func StartMigrasi(c *fiber.Ctx) error {
 				?, ?, ?, 
 				?, ?, 
 				?, ?, ?,
-				?, ?, ?,
-				?, ?, ?, 
+				?, ?, 
+				CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ?, ?,
 				?
 				)
 			`
@@ -167,7 +175,7 @@ func StartMigrasi(c *fiber.Ctx) error {
 				data["retailer_id"], data["farmer_group_id"], data["farmer_group_union_name"],
 				data["farmer_name"], data["farmer_nik"], data["farmer_address"],
 				data["farmer_mother_name"], data["farmer_born_place"],
-				data["farmer_born_date"], data["subsector"], data["mt1_planting_area"],
+				data["subsector"], data["mt1_planting_area"],
 				data["mt2_planting_area"], data["mt3_planting_area"],
 				data["mt1_commodity"], data["mt2_commodity"], data["mt3_commodity"],
 				data["mt1_urea"], data["mt2_urea"], data["mt3_urea"], data["mt1_sp36"],
@@ -176,15 +184,14 @@ func StartMigrasi(c *fiber.Ctx) error {
 				data["mt1_organic"], data["mt2_organic"], data["mt3_organic"],
 				data["mt1_npk_formula"], data["mt2_npk_formula"],
 				data["mt3_npk_formula"], data["mt1_poc"], data["mt2_poc"],
-				data["mt3_poc"], data["field_coordinate"], data["created_at"],
-				data["updated_at"], data["farmer_group_name"], data["farmer_phone_number"],
+				data["mt3_poc"], data["field_coordinate"], data["farmer_group_name"], data["farmer_phone_number"],
 				data["id_agt"],
 			)
 		}
 	}
-	return c.JSON(fiber.Map{
-		"data": "Selesai",
-	})
+	log.Println("=== Selesai Sinkronisasi ===")
+	return nil
+
 }
 
 func District(c *fiber.Ctx) error {
